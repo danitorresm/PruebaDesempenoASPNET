@@ -1,0 +1,218 @@
+
+Instalamos Frameworks:
+    dotnet add package Microsoft.EntityFrameworkCore  
+    dotnet add package Pomelo.EntityFrameworkCore.MySql
+------------------------------------------------------------------------------------------------
+Antes de crear la base de datos debemos tener muy en cuenta cuales son las tablas debiles y cuales son las fuertes al igual que las relaciones
+Conexion a la base datos con los siguientes datos:
+      ,
+    "AllowedHosts": "*",
+    "ConnectionStrings": {
+      "MySqlConnection":"server=________;port=3306;database=________;uid=________;password=________;"
+
+    }
+------------------------------------------------------------------------------------------------
+Creamos:
+    -Controllers
+        -Por cada tabla creamos una carpeta dentro de Controllers
+    -Models
+        -Por cada tabla creamos un archivo(una clase), los nombres de estos son singular
+    -Data
+
+
+    -Services
+      -Por cada tabala creamos una carpeta dentro de Services(recordar que estos nombres son en singular))
+          - Dentro de cada carpeta archivo INombreModeloRepository.cs y NombreModeloRepository.cs
+------------------------------------------------------------------------------------------------
+Por cada tabla debemos tener una carpeta, dentro de Controllers:
+  -Controlador:Ahora por cada Accion del crud creamos un archivo asi:
+    -NombreTablaController.cs
+        
+   
+
+    
+
+        Para el controlador de Read de buscar todo y por id
+    -CrearNombreTablaController.cs
+        Para elcontroladore de Create
+    -UpdateNombreTablaController.cs
+        Para el controlador actualizar 
+    -DeleteNombreTablaController.cs
+        Para el controlador Eliminar o cambiar de estado en base de datos
+------------------------------------------------------------------------------------------------
+En la carpeta Controllers "Nombre en plural":    
+        using Microsoft.AspNetCore.Mvc;
+        using NombreProyecto.Data;
+        namespace NombreProyecto.Controllers
+        {
+          public NombreTablaController:Controller
+          {
+            public readonly BaseContext _context;
+            public NombreTablaController(BaseContext context)
+            {
+              _context = context;
+            }/**/
+
+        /*1.Index
+        ************************************************************************
+          public async Task<IActionResult> Index(){
+              return View(await _context.Sectors.ToListAsync());
+        }
+        /**************************************************************************/
+        /*2.Detalles
+        *********************************************************************
+        public  async Task<IActionResult> Details(int? id){
+            return View(await _context.Sectors.FirstAsync(s=>s.Id==id));
+        }
+        /**************************************************************************/
+        /*3.Create
+        ***************************************************************************
+        public IActionResult Create(){
+            return View();
+        }
+        [HttpPost]
+        public IActionResult Create(Sector sector) {
+            _context.Sectors.Add(sector);
+            _context.SaveChanges();
+            return RedirectToAction("index");
+        }
+        /**************************************************************************/
+        /*4.ELiminar
+        *************************************************************************
+        public async Task<IActionResult> Delete(int? id){
+            var sector = await _context.Sectors.FirstAsync(s=>s.Id==id);
+            _context.Sectors.Remove(sector);
+            _context.SaveChanges();
+            return RedirectToAction("index");
+        }
+        /**************************************************************************/
+        /*5.Editar
+        *************************************************************************
+        public async Task<IActionResult> Edit(int? id){
+            
+            return View(await _context.Sectors.FirstOrDefaultAsync(s=>s.Id == id));
+        }      
+        [HttpPost]
+        public IActionResult Edit(int id, Sector sector){
+            _context.Sectors.Update(sector);
+            _context.SaveChanges();
+            return RedirectToAction("Index");
+        
+        }
+        /**************************************************************************/
+        /*6.Search
+        **************************************************************************
+        public IActionResult Search(string searchString){
+            var users = _context.Sectors.AsQueryable();
+
+            if(!string.IsNullOrEmpty(searchString)){
+                users = users.Where(u => u.Name.Contains(searchString));
+            }
+            return View("Index", users.ToList());
+        }
+        /************************************************************************************/
+        /* /*4.Login
+        **************************************************************************
+        public IActionResult Login(){
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> Login (Employe model){
+            var users = await _context.Employees.FirstOrDefaultAsync(x=>x.Cedula == model.Cedula && x.Password == model.Password);
+            if (users != null)
+            {
+                return RedirectToAction ("Login");
+            }else {
+                ModelState.AddModelError(string.Empty,"Los datos son erroneos");
+                return View("Login",model);
+                }
+        }
+        /************************************************************************************/
+----------------------------------------------------------------      
+-Modelos
+    -NombreTabla.cs en Carpeta Models "Nombre en singular":
+        -namespace NombreProyecto.Models
+        {
+          public class NombreModelo(Nombre de la tabla en singular)
+          {
+            public int Id {get; set;}
+            public string name {get; set;}
+            public string LastName {get; set}
+            ... y asi con todas las columnas (recordar que por cada tabla se debe realizar uno de estos)
+          }
+        }
+  ----------------------------------------------------------------
+
+------------------------------------------------------------------------------------------------
+Registramos MySQL como servicio en el archivo program.cs:
+  agregamos los using necesarios:
+  using NombreProyecto.Data;
+  using Microsoft.EntityFrameworkCore;
+  /*Esto ya esta en el program.cs==============================================================*/
+  var builder = WebApplication.CreateBuilder(args);
+  // Add services to the container.
+  builder.Services.AddControllersWithViews();
+  /*===============================================================*/
+  /*Esto es lo que agregamos en Program.cs ----------------------------------------------------------------------------------*/
+  builder.Services.AddDbContext<BaseContext>(options=>
+    options.UseMySql(   
+        builder.Configuration.GetConnectionString("MySqlConnection"),
+        Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.20-mysql")));
+  /*----------------------------------------------------------------------------------*/
+  /*Aqui registramos todos nuestros servicios*/
+  builder.Services.AddScoped<InterfaceCreadaEnServices, ClaseCreadaEnServices>();
+  var app = builder.Build();
+/*recorda el app.MapControllers(); encima de app.Run();*/
+----------------------------------------------------------------------------------------------------------------------------------
+Creamos Carpeta Data donde va ubicado el archivo BaseContext.cs debe contener:
+  using Microsoft.EntityFramework;
+  using NombreProyecto.Models;
+  namespace NombreProyecto.Data
+  {
+    public class BaseContext: DbContext
+    {
+      public BaseContext(DbContextOptions<BaseContext> options):base(options){
+
+      }
+      /*Aqui registramos todos y cada uno de nuestros modelos*/
+      public DbSet<NombreModelo> NombreTabla {get;set;}
+    }
+  }
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*4.Login
+        **************************************************************************/
+        public IActionResult Login(){
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> Login (Employe model){
+            var users = await _context.Employees.FirstOrDefaultAsync(x=>x.Cedula == model.Cedula && x.Password == model.Password);
+            if (users != null)
+            {
+                return RedirectToAction ("Login");
+            }else {
+                ModelState.AddModelError(string.Empty,"Los datos son erroneos");
+                return View("Login",model);
+                }
+        }
+}
+|| public readonly DatosContext _context;
+
+                public HomeController(DatosContext context)
+            {
+                _context = context;
+            }
